@@ -1,6 +1,6 @@
 import { useState } from "react";
-import AddEmployee from "../components/addEmployee.jsx";
-import EmployeeList from "../components/employeeList.jsx";
+import AddEmployee from "../components/AddEmployee.jsx";
+import EmployeeList from "../components/EmployeeList.jsx";
 import Navbar from "../components/NavBar";
 
 const Employees = () => {
