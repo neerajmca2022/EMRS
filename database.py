@@ -2,6 +2,7 @@ from pymongo import MongoClient
 import os
 
 # Get URI from Render environment variable
+print("ENV CHECK:", os.environ)
 MONGO_URI = os.getenv("MONGO_URI = mongodb+srv://neerajrajpoot93:qQqJltPWOoDn9WtF@cluster0.behpnlv.mongodb.net/HMRS?retryWrites=true&w=majority")
 
 if not MONGO_URI:
