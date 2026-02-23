@@ -1,9 +1,9 @@
 from pymongo import MongoClient
-
+import os
 # -----------------------------
 # MongoDB connection
 # -----------------------------
-MONGO_URI = "mongodb+srv://neerajrajpoot93:V8TCnEUUvzOqZjnP@cluster0.behpnlv.mongodb.net/?appName=Cluster0"
+MONGO_URI = os.getenv("MONGO_URI = mongodb+srv://neerajrajpoot93:V8TCnEUUvzOqZjnPord@cluster0.behpnlv.mongodb.net/HMRS?retryWrites=true&w=majority")
 client = MongoClient(MONGO_URI)
 
 # Database
