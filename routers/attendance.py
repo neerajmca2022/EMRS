@@ -1,24 +1,100 @@
 from fastapi import APIRouter, HTTPException
+from datetime import datetime
+from fastapi import APIRouter, Query
+from typing import Optional
+from database import attendance_collection
 from database import employees_collection, attendance_collection
-from models.employee import Attendance
+from models.attendance import AttendanceBulkCreate
 
 router = APIRouter()
 
-@router.post("/")
-def mark_attendance(att: Attendance):
-    if employees_collection.find_one({"employee_id": att.employee_id}) is None:
-        raise HTTPException(status_code=404, detail="Employee not found")
+@router.post("/mark")
+def mark_attendance(data: AttendanceBulkCreate):
 
-    if attendance_collection.find_one({"employee_id": att.employee_id, "date": att.date}):
-        raise HTTPException(status_code=400, detail="Attendance already marked for this date")
+    inserted_records = []
 
-    attendance_collection.insert_one(att.dict())
-    return {"message": "Attendance marked successfully"}
+    for record in data.records:
 
-@router.get("/{employee_id}")
-def get_attendance(employee_id: str):
-    if employees_collection.find_one({"employee_id": employee_id}) is None:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    
-    records = list(attendance_collection.find({"employee_id": employee_id}, {"_id": 0}))
-    return records
+        # Check employee exists
+        employee = employees_collection.find_one(
+            {"employee_id": record.employee_id}
+        )
+        if not employee:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Employee {record.employee_id} not found"
+            )
+
+        # Check if attendance already marked
+        existing = attendance_collection.find_one({
+            "employee_id": record.employee_id,
+            "date": str(data.date)
+        })
+
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Attendance already marked for {record.employee_id}"
+            )
+
+        attendance_data = {
+            "employee_id": record.employee_id,
+            "date": str(data.date),
+            "status": record.status,
+            "check_in": datetime.now().strftime("%H:%M:%S"),
+            "timestamp": datetime.utcnow()
+        }
+
+        attendance_collection.insert_one(attendance_data)
+        inserted_records.append(record.employee_id)
+
+    return {
+        "message": "Attendance marked successfully",
+        "employees": inserted_records
+    }
+@router.get("/details")
+def get_attendance_details(
+    date: Optional[str] = None,
+    employee_id: Optional[str] = None
+):
+
+    match_stage = {}
+
+    if date:
+        match_stage["date"] = date
+
+    if employee_id:
+        match_stage["employee_id"] = employee_id
+
+    pipeline = [
+        {
+            "$match": match_stage
+        },
+        {
+            "$lookup": {
+                "from": "employees",   
+                "localField": "employee_id",
+                "foreignField": "employee_id",
+                "as": "employee_info"
+            }
+        },
+        {
+            "$unwind": "$employee_info"
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "employee_id": 1,
+                "date": 1,
+                "status": 1,
+                "check_in": 1,
+                "name": "$employee_info.full_name",
+                "department": "$employee_info.department",
+                "email": "$employee_info.email"
+            }
+        }
+    ]
+
+    result = list(attendance_collection.aggregate(pipeline))
+
+    return result

@@ -3,7 +3,7 @@ from pymongo import MongoClient
 # -----------------------------
 # MongoDB connection
 # -----------------------------
-MONGO_URI = "mongodb+srv://neeraj_2024:RMdQOyMf7n3vtnAS@test1.jtabjw3.mongodb.net/"
+MONGO_URI = "mongodb+srv://neerajrajpoot93:V8TCnEUUvzOqZjnP@cluster0.behpnlv.mongodb.net/?appName=Cluster0"
 client = MongoClient(MONGO_URI)
 
 # Database
