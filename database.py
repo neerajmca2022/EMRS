@@ -1,18 +1,17 @@
-from pymongo import MongoClient
+from dotenv import load_dotenv
 import os
+from pymongo import MongoClient
 
-# Get URI from Render environment variable
-print("ENV CHECK:", os.environ)
-MONGO_URI = os.getenv("MONGO_URI = mongodb+srv://neerajrajpoot93:qQqJltPWOoDn9WtF@cluster0.behpnlv.mongodb.net/HMRS?retryWrites=true&w=majority")
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")   # ONLY the name here
 
 if not MONGO_URI:
     raise ValueError("MONGO_URI environment variable not set")
 
-client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+client = MongoClient(MONGO_URI)
 
-# Database
-db = client["EMRS"]
+db = client["HMRS"]
 
-# Collections
 employees_collection = db["employees"]
 attendance_collection = db["attendance"]
